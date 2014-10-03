@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 /* 	CFGScanDroid - Control Flow Graph Scanning for Android
 	Copyright (C) 2014  Douglas Gastonguay-Goddard
 
@@ -11,6 +13,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details */
 
+>>>>>>> 5fec7ecbd91ebedd12fab1f173c34afdb90d0131
 package org.talos.CFGScanDroid;
 
 import java.util.Map;
@@ -132,11 +135,23 @@ public class ControlFlowGraph {
 		//List<? extends TryBlock<? extends ExceptionHandler>> tryBlocks = null;
 		if(impl != null) {
 			int address = 0;
+<<<<<<< HEAD
+			try {
+				for(Instruction instruction: impl.getInstructions()) {
+					BasicBlockInstruction bbinsn = new BasicBlockInstruction(address, instruction);
+					//System.out.print("\t" + address + "\t" + instruction.getOpcode() + "\t" + bbinsn.branch);
+					address += instruction.getCodeUnits();
+					flatMethod.add(bbinsn);
+				}
+			} catch(ArrayIndexOutOfBoundsException e) {
+				return flatMethod;
+=======
 			for(Instruction instruction: impl.getInstructions()) {
 				BasicBlockInstruction bbinsn = new BasicBlockInstruction(address, instruction);
 				//System.out.print("\t" + address + "\t" + instruction.getOpcode() + "\t" + bbinsn.branch);
 				address += instruction.getCodeUnits();
 				flatMethod.add(bbinsn);
+>>>>>>> 5fec7ecbd91ebedd12fab1f173c34afdb90d0131
 			}
 			//tryBlocks = impl.getTryBlocks();
 		}
