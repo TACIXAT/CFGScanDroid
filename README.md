@@ -3,7 +3,7 @@ CFGScanDroid is a utility for comparing control flow graph (CFG) signatures to t
 
 It was designed as a scanner for malicious applications. 
 
-Talk here: https://www.youtube.com/watch?v=I0KXjN67hkA
+Talk here: http://www.irongeek.com/i.php?page=videos/derbycon4/t420-control-flow-graph-based-virus-scanning-douglas-goddard
 
 ## Building ##
 
