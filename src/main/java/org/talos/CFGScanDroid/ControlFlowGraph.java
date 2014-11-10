@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.SwitchElement;
@@ -41,6 +43,38 @@ public class ControlFlowGraph {
 	private SparseDoubleMatrix2D adjacencyMatrix;
 	private String identifier;
 	private String shortIdentifier;
+	private List<BasicBlockInstruction> flatMethod;
+
+	final private static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	
+	public byte[] getMethodBytes() {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		
+		try {
+			for(BasicBlockInstruction bbinsn : flatMethod) {
+				outputStream.write(bbinsn.rawBytes);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return outputStream.toByteArray();
+	}
+
+	public String getMethodBytesAsHexString() {
+		byte[] methodBytes = getMethodBytes();
+		return bytesToHex(methodBytes);
+	}
+
+	private static String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    for ( int j = 0; j < bytes.length; j++ ) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = hexArray[v >>> 4];
+	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
 
 	public String getIdentifier(boolean shortForm) {
 		if(shortForm)
@@ -132,16 +166,11 @@ public class ControlFlowGraph {
 		//List<? extends TryBlock<? extends ExceptionHandler>> tryBlocks = null;
 		if(impl != null) {
 			int address = 0;
-
-			try {
-				for(Instruction instruction: impl.getInstructions()) {
-					BasicBlockInstruction bbinsn = new BasicBlockInstruction(address, instruction);
-					//System.out.print("\t" + address + "\t" + instruction.getOpcode() + "\t" + bbinsn.branch);
-					address += instruction.getCodeUnits();
-					flatMethod.add(bbinsn);
-				}
-			} catch(Exception e) {
-				return flatMethod;
+			for(Instruction instruction: impl.getInstructions()) {
+				BasicBlockInstruction bbinsn = new BasicBlockInstruction(address, instruction);
+				//System.out.print("\t" + address + "\t" + instruction.getOpcode() + "\t" + bbinsn.branch);
+				address += instruction.getCodeUnits();
+				flatMethod.add(bbinsn);
 			}
 			//tryBlocks = impl.getTryBlocks();
 		}
@@ -160,6 +189,7 @@ public class ControlFlowGraph {
 
 	private ControlFlowGraph(List<BasicBlockInstruction> flatMethod) { 
 		//, List<? extends TryBlock<? extends ExceptionHandler>> tryBlocks) {
+		this.flatMethod = flatMethod;
 		List<Integer> leaders = new ArrayList<Integer>();
 		Map<Integer, Integer> switchMap = new HashMap<Integer, Integer>();
 		leaders.add(0);

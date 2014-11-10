@@ -14,6 +14,8 @@
 package org.talos.CFGScanDroid;
 
 import org.jf.dexlib2.iface.instruction.Instruction;
+import org.jf.dexlib2.dexbacked.DexBackedDexFile;
+import org.jf.dexlib2.dexbacked.instruction.DexBackedInstruction;
 import java.util.List;
 
 public class BasicBlockInstruction {
@@ -21,6 +23,9 @@ public class BasicBlockInstruction {
 	boolean leader;
 	boolean branch;
 	int address;
+	int offset = -1;
+	byte rawBytes[];
+	int length = 0;
 	List<Integer> destinations;
 
 	public BasicBlockInstruction(int address, Instruction insn) {
@@ -29,6 +34,18 @@ public class BasicBlockInstruction {
 		this.branch = isBranch();
 		this.destinations = null;
 		this.address = address;
+
+		DexBackedInstruction dexBackedInstruction = (DexBackedInstruction)insn;
+		this.offset = dexBackedInstruction.instructionStart;
+		this.length = insn.getCodeUnits() * 2;
+		this.rawBytes = new byte[this.length];
+		// DexReader reader = readerAt(this.offset);
+		for(int i=0; i<this.length; ++i) {
+			this.rawBytes[i] = (byte)dexBackedInstruction.dexFile.readByte(this.offset + i);
+			// System.out.print(this.rawBytes[i]);
+			// System.out.print(' ');
+		}
+		// System.out.println();
 	}
 
 	private boolean isBranch() {

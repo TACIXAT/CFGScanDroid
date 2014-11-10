@@ -22,7 +22,6 @@ import cern.colt.list.IntArrayList;
 import cern.colt.list.DoubleArrayList;
 import cern.colt.function.DoubleDoubleFunction;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -76,6 +75,7 @@ public class CFGScanDroid {
 	static long scannedFunctionCount = 0;
 	static JCommanderArguments parsedArguments;
 	static boolean useShortIdentifier;
+	static List<Match> matches = new ArrayList<Match>();
 
 	public static void main(String[] args) throws IOException {
 		parsedArguments = new JCommanderArguments();
@@ -350,8 +350,13 @@ public class CFGScanDroid {
 						   	detected = true;
 						   	// alert unless suppressed
 						   	if(parsedArguments.printMatched()) {
-						   		if(!wasPreviouslyDetected)
+						   		if(!wasPreviouslyDetected) {
 						   			System.out.println("FILE: " + dexFileFile.getPath());
+						   			matches.add(new Match(dexFileFile, signature, cfg));
+						   		} else {
+						   			// this skips rehashing the file (md5 / sha256)
+						   			matches.add(new Match(matches.get(matches.size()-1), signature, cfg));
+						   		}
 
 								System.out.println("\t" + signature.getName() + " MATCH FOUND: ");
 								System.out.println("\t\t" + cfg.getIdentifier(useShortIdentifier));
