@@ -35,8 +35,8 @@ import org.jgrapht.graph.SimpleGraph;
 
 public class ScanningAlgorithm {
 
-	public static final int MAX_DEPTH = 200;
-	
+	public static final int MAX_DEPTH = 512;
+
 	// TODO: refine bfsCompare to return a status code rather than true false
 	// this will allow us to leave this function early once there are insufficient nodes
 	// to satisfy signature (or at least not consider that node's children)

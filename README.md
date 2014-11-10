@@ -3,6 +3,8 @@ CFGScanDroid is a utility for comparing control flow graph (CFG) signatures to t
 
 It was designed as a scanner for malicious applications. 
 
+Talk here: https://www.youtube.com/watch?v=I0KXjN67hkA
+
 ## Building ##
 
 If you do not have Maven installed:
