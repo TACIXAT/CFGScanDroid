@@ -25,50 +25,48 @@ This will create a file:
 
 `java -jar target/CFGScanDroid-0.1-jar-with-dependencies.jar`
 
-	Usage: <main class> [options]
-	  Options:
-	    -f, -dex-files
-	       DEX file(s) to run
-	       Default: []
-	    -d, -dump-sigs
-	       Dump signature for each method of each DEX file
-	       Default: false
-	    -e, -exact-match
-	       Only match complete signature CFG to function CFG
-	       Default: true
-	    -n, -normalize
-	       Normalize the control flow graph to have a single entry point
-	       Default: false
-	    -o, -one-match
-	       Only match once on a method
-	       Default: false
-	    -p, -partial-match
-	       Find the signature graph within the function graph
-	       Default: false
-	    -m, -print-matched
-	       Print when a match is found
-	       Default: true
-	    -t, -print-statistics
-	       Print signature statistics after scan
-	       Default: true
-	    -u, -print-unmatched
-	       Print when no match is found
-	       Default: true
-	    -r, -raw-signature
-	       Pass a signature in raw on the command line
-	       Default: []
-	    -h, -short-identifier
-	       Do not print full CFG identifier
-	       Default: false
-	    -s, -sig-file
-	       A file containing signatures
-	       Default: []
-	    -i, -simple-match
-	       Match exact on vertex and edge count only (fp prone)
-	       Default: false
-	    -g, -subgraph
-	       Tries to match signature depth 0 to each function vertex
-	       Default: false
+	USAGE:
+		Must have one of (-d|-s|-l|-r) and you should probably specify some DEX files (-f) to use too
+
+	ESSENTIALS
+		-f, -dex-files
+			DEX file(s) to run
+		-d, -dump-sigs
+			Dump signature for each method of each DEX file
+		-s, -sig-file
+			A file containing signatures
+		-r, -raw-signature
+			Pass a signature in raw on the command line
+		-l, -load-sigs-from-dex
+			DEX file(s) whose methods to scan with
+
+	SCAN MODES
+		-e, -exact-match
+			Only match complete signature CFG to function CFG
+		-p, -partial-match
+			Find the signature graph within the function graph
+		-o, -one-match
+			Only match once on a method
+		-b, -subgraph
+			Tries to match signature depth 0 to each function vertex
+		-i, -simple-match
+			Match exact on vertex and edge count only (fp prone)
+		-n, -normalize
+			Normalize the control flow graph to have a single entry point
+
+	OUTPUT
+		-j, -print-json
+			Print JSON for matches
+		-g, -graph
+			Outputs a GraphML file of the matches
+		-m, -print-matched
+			Print when a match is found
+		-u, -print-unmatched
+			Print when no match is found
+		-t, -print-statistics
+			Print signature statistics after scan
+		-h, -short-identifier
+			Do not print full CFG identifier
 
 Basic usage will be:
 
