@@ -43,6 +43,9 @@ public class JCommanderArguments {
 	@Parameter(names = {"-m", "-print-matched"}, description = "Print when a match is found", arity = 1)
 	private boolean printMatched = true;
 
+	@Parameter(names = {"-j", "-print-json"}, description = "Print JSON for matches")
+	private boolean printJSON = false;
+
 	@Parameter(names = {"-u", "-print-unmatched"}, description = "Print when no match is found", arity = 1)
 	private boolean printUnmatched = true;
 
@@ -123,6 +126,10 @@ public class JCommanderArguments {
 
 	public boolean printMatched() {
 		return printMatched;
+	}
+
+	public boolean printJSON() {
+		return printJSON;
 	}
 
 	public boolean subgraphIsomorphism() {

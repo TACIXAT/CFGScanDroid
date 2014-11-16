@@ -19,6 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 public class Match {
 	private String fileName;
 	private String fileMD5;
@@ -64,5 +67,16 @@ public class Match {
 
 	public ControlFlowGraph getControlFlowGraph() {
 		return cfg;
+	}
+
+	public String toJSONString() {
+		JSONObject output = new JSONObject();
+		output.put("fileName", fileName);
+		output.put("fileSHA256", fileSHA256);
+		output.put("fileMD5", fileMD5);
+		// output.put("signature", signature.getStringSignature());
+		output.put("signature", signature.getName());
+		// output.put("methodBytes", cfg.getMethodBytesAsHexString());
+		return output.toJSONString();
 	}
 }

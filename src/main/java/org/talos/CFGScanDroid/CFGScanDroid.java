@@ -337,16 +337,24 @@ public class CFGScanDroid {
 						   	detected = true;
 						   	// alert unless suppressed
 						   	if(parsedArguments.printMatched()) {
+						   		Match match;
 						   		if(!wasPreviouslyDetected) {
-						   			System.out.println("FILE: " + dexFileFile.getPath());
-						   			matches.add(new Match(dexFileFile, signature, cfg));
+						   			match = new Match(dexFileFile, signature, cfg);
+						   			if(!parsedArguments.printJSON())
+						   				System.out.println("FILE: " + dexFileFile.getPath());
 						   		} else {
 						   			// this skips rehashing the file (md5 / sha256)
-						   			matches.add(new Match(matches.get(matches.size()-1), signature, cfg));
+						   			match = new Match(matches.get(matches.size()-1), signature, cfg);
 						   		}
 
-								System.out.println("\t" + signature.getName() + " MATCH FOUND: ");
-								System.out.println("\t\t" + cfg.getIdentifier(useShortIdentifier));
+					   			matches.add(match);
+						   		
+						   		if(parsedArguments.printJSON()) {
+									System.out.println(match.toJSONString());
+								} else {
+									System.out.println("\t" + signature.getName() + " MATCH FOUND: ");
+									System.out.println("\t\t" + cfg.getIdentifier(useShortIdentifier));
+								}
 							}
 
 							signature.detected();
@@ -365,7 +373,7 @@ public class CFGScanDroid {
 		}
 
 		// print unmatched unless suppressed
-		if(!detected && parsedArguments.printUnmatched()) {
+		if(!detected && parsedArguments.printUnmatched() && !parsedArguments.printJSON()) {
 			System.out.println("FILE: " + dexFileFile.getPath());
 		}
 
