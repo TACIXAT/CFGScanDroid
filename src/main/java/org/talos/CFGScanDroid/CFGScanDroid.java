@@ -45,24 +45,39 @@ import com.google.common.collect.Ordering;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Edge;
+
 // define: incest
 	// when a vertex has a sibling at the same depth 
 	// and that sibling is also it's parent
 
 public class CFGScanDroid {
-	// parse signature
-		// initialize sig matrix
-
-	// open dex file
-		// for method in dex
-			// parse cfg into matrix
-
 	static long scannedSampleCount = 0;
 	static long detectedSampleCount = 0;
 	static long scannedFunctionCount = 0;
 	static JCommanderArguments parsedArguments;
 	static boolean useShortIdentifier;
 	static List<Match> matches = new ArrayList<Match>();
+
+	public static Graph buildGraph() {
+		Graph graph = new TinkerGraph("/tmp/tinkergraph", TinkerGraph.FileType.GRAPHML); 
+		for(Match match : matches) {
+			// check map for sig
+				// create vertex
+				// add sig to map
+
+			// check map for file
+				// create file
+				// add file to map
+
+			// create edge(sig, file)
+			// add to graph (necessary?)
+		}
+		return graph;
+	}
 
 	public static void main(String[] args) throws IOException {
 		parsedArguments = new JCommanderArguments();
