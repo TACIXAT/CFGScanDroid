@@ -74,7 +74,7 @@ public class CFGScanDroid {
 		} catch(ParameterException exception) {
 			System.err.println(exception);
 			System.err.println("PARSE ERROR: Bad parameter");
-			argParser.usage();
+			System.out.print(parsedArguments.getUsage());
 			System.exit(1);
 		}
 
@@ -188,13 +188,13 @@ public class CFGScanDroid {
 		   parsedArguments.getSignatureFiles().size() < 1 && 
 		   !parsedArguments.dumpSignatures()) {
 			System.err.println("PARSE ERROR: Must have one of (-s|-d|-r)!");
-			argParser.usage();
+			System.out.print(parsedArguments.getUsage());
 			System.exit(1);
 		}
 
 		if(parsedArguments.simpleMatch() && parsedArguments.subgraphIsomorphism()) {
 			System.err.println("ERROR: Please specify only one of (-g|-i)");
-			argParser.usage();
+			System.out.print(parsedArguments.getUsage());
 			System.exit(1);
 		}
 
@@ -336,25 +336,23 @@ public class CFGScanDroid {
 					   	   	boolean wasPreviouslyDetected = detected;
 						   	detected = true;
 						   	// alert unless suppressed
-						   	if(parsedArguments.printMatched()) {
-						   		Match match;
-						   		if(!wasPreviouslyDetected) {
-						   			match = new Match(dexFileFile, signature, cfg);
-						   			if(!parsedArguments.printJSON())
-						   				System.out.println("FILE: " + dexFileFile.getPath());
-						   		} else {
-						   			// this skips rehashing the file (md5 / sha256)
-						   			match = new Match(matches.get(matches.size()-1), signature, cfg);
-						   		}
+					   		Match match;
+					   		if(!wasPreviouslyDetected) {
+					   			match = new Match(dexFileFile, signature, cfg);
+					   			if(parsedArguments.printMatched() && !parsedArguments.printJSON())
+					   				System.out.println("FILE: " + dexFileFile.getPath());
+					   		} else {
+					   			// this skips rehashing the file (md5 / sha256)
+					   			match = new Match(matches.get(matches.size()-1), signature, cfg);
+					   		}
 
-					   			matches.add(match);
-						   		
-						   		if(parsedArguments.printJSON()) {
-									System.out.println(match.toJSONString());
-								} else {
-									System.out.println("\t" + signature.getName() + " MATCH FOUND: ");
-									System.out.println("\t\t" + cfg.getIdentifier(useShortIdentifier));
-								}
+				   			matches.add(match);
+					   		
+					   		if(parsedArguments.printMatched() && parsedArguments.printJSON()) {
+								System.out.println(match.toJSONString());
+							} else if(parsedArguments.printMatched()) {
+								System.out.println("\t" + signature.getName() + " MATCH FOUND: ");
+								System.out.println("\t\t" + cfg.getIdentifier(useShortIdentifier));
 							}
 
 							signature.detected();
