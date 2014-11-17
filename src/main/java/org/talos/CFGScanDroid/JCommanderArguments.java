@@ -43,7 +43,7 @@ public class JCommanderArguments {
 	@Parameter(names = {"-j", "-print-json"}, description = "Print JSON for matches")
 	private boolean printJSON = false;
 
-	@Parameter(names = {"-l", "-load-sigs-from-dex"}, description = "DEX file(s) whose methods to scan with", variableArity = true)
+	@Parameter(names = {"-l", "-load-sigs-from-dex"}, description = "DEX file(s) whose methods to scan with", variableArity = true, hidden = true)
 	private List<String> dexSigFiles = new ArrayList<String>();
 
 	@Parameter(names = {"-m", "-print-matched"}, description = "Print when a match is found", arity = 1)
@@ -112,6 +112,10 @@ public class JCommanderArguments {
 						+ "\t\tDo not print full CFG identifier\n";
 						
 		return usage;
+	}
+
+	public boolean outputGraph() {
+		return outputGraph;
 	}
 
 	public List<String> getSignatureFiles() {

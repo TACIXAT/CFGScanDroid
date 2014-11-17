@@ -50,6 +50,9 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.Edge;
 
+import java.util.Map;
+import java.util.HashMap;
+
 // define: incest
 	// when a vertex has a sibling at the same depth 
 	// and that sibling is also it's parent
@@ -63,19 +66,60 @@ public class CFGScanDroid {
 	static List<Match> matches = new ArrayList<Match>();
 
 	public static Graph buildGraph() {
-		Graph graph = new TinkerGraph("/tmp/tinkergraph", TinkerGraph.FileType.GRAPHML); 
+		TinkerGraph graph = new TinkerGraph("/tmp/cfggraph", TinkerGraph.FileType.GRAPHML); 
+		graph.createIndex("signatureName", Vertex.class);
+		graph.createIndex("sha256", Vertex.class);
+		graph.createIndex("md5", Vertex.class);
+
+		Map sigLookup = new HashMap<String, Vertex>();
+		Map fileLookup = new HashMap<String, Vertex>();
+		
 		for(Match match : matches) {
 			// check map for sig
+			CFGSig matchSig = match.getSignature();
+			String sigString = matchSig.getStringSignature();
+			Vertex sigVertex = (Vertex)sigLookup.get(sigString);
+
+			if(sigVertex == null) {
 				// create vertex
+				sigVertex = graph.addVertex(null);
+				sigVertex.setProperty("signature", sigString);
+				sigVertex.setProperty("signatureName", matchSig.getName());
 				// add sig to map
+				sigLookup.put(sigString, sigVertex);
+			}
 
 			// check map for file
-				// create file
+			String fileSHA256 = match.getFileSHA256();
+			Vertex fileVertex = (Vertex)fileLookup.get(fileSHA256);
+
+			if(fileVertex == null) {
+				// create vertex
+				fileVertex = graph.addVertex(null);
+				fileVertex.setProperty("sha256", fileSHA256);
+				fileVertex.setProperty("md5", match.getFileMD5());
+				fileVertex.setProperty("fileNameList", new ArrayList<String>());
 				// add file to map
+				fileLookup.put(fileSHA256, fileVertex);
+			}
+
+			// what idiot would scan the same file multiple times with different names?
+			List<String> fileNames = fileVertex.getProperty("fileNameList");
+			if(!fileNames.contains(match.getFileName())) {
+				fileNames.add(match.getFileName());
+			}
+
+			// TODO: comment this out and see if it still works
+			fileVertex.setProperty("fileNameList", fileNames);
 
 			// create edge(sig, file)
-			// add to graph (necessary?)
+			Edge matchEdge = graph.addEdge(null, sigVertex, fileVertex, "matches");
+
+			ControlFlowGraph cfg = match.getControlFlowGraph();
+			matchEdge.setProperty("method", cfg.getIdentifier(false));
+			// matchEdge.setProperty("fileBytes", cfg.getMethodBytesAsHexString());
 		}
+
 		return graph;
 	}
 
@@ -153,6 +197,11 @@ public class CFGScanDroid {
 				for(CFGSig signature : signatures) {
 					System.out.println(signature.getName() + ": " + signature.getDetectionCount());
 				}
+			}
+
+			if(parsedArguments.outputGraph()) {
+				Graph graph = buildGraph();
+				graph.shutdown();
 			}
 		}
 
