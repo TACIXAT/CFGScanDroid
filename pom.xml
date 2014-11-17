@@ -38,9 +38,20 @@
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
-    <version>1.35</version>
-</dependency>
+      <version>1.35</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
 
+    <dependency>
+      <groupId>com.tinkerpop.blueprints</groupId>
+      <artifactId>blueprints-core</artifactId>
+      <version>2.6.0</version>
+    </dependency>
   </dependencies>
   
   <build>
