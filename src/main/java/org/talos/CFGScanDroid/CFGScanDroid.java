@@ -70,6 +70,7 @@ public class CFGScanDroid {
 		graph.createIndex("signatureName", Vertex.class);
 		graph.createIndex("sha256", Vertex.class);
 		graph.createIndex("md5", Vertex.class);
+		graph.createIndex("type", Vertex.class);
 
 		Map sigLookup = new HashMap<String, Vertex>();
 		Map fileLookup = new HashMap<String, Vertex>();
@@ -83,6 +84,7 @@ public class CFGScanDroid {
 			if(sigVertex == null) {
 				// create vertex
 				sigVertex = graph.addVertex(null);
+				sigVertex.setProperty("type", "signature");
 				sigVertex.setProperty("signature", sigString);
 				sigVertex.setProperty("signatureName", matchSig.getName());
 				// add sig to map
@@ -96,6 +98,7 @@ public class CFGScanDroid {
 			if(fileVertex == null) {
 				// create vertex
 				fileVertex = graph.addVertex(null);
+				sigVertex.setProperty("type", "file");
 				fileVertex.setProperty("sha256", fileSHA256);
 				fileVertex.setProperty("md5", match.getFileMD5());
 				fileVertex.setProperty("fileNameList", new ArrayList<String>());
@@ -285,7 +288,7 @@ public class CFGScanDroid {
 
 	public static void dumpSigs(File dexFileFile) throws IOException {
 		// list file
-		System.out.println("DUMPING: " + dexFileFile.getPath());
+		System.out.println("#DUMPING: " + dexFileFile.getPath());
 		if(!dexFileFile.exists()) {
 			System.err.println("Dexfile not found!");
 			return;
@@ -297,13 +300,13 @@ public class CFGScanDroid {
 		try {
 			dexFile = DexFileFactory.loadDexFile(dexFileFile, 15);
 		} catch(org.jf.util.ExceptionWithContext e) {
-			System.out.println(e);
+			System.err.println(e);
 			return;
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("Cannot scan a directory: " + dexFileFile.getPath());
+			System.err.println("Cannot scan a directory: " + dexFileFile.getPath());
 			return;
 		} catch(Exception e) {
-			System.out.println("Error loading file: " + dexFileFile.getPath());
+			System.err.println("Error loading file: " + dexFileFile.getPath());
 			return;
 		} 
 
@@ -346,13 +349,13 @@ public class CFGScanDroid {
 		try {
 			dexFile = DexFileFactory.loadDexFile(dexFileFile, 15);
 		} catch(org.jf.util.ExceptionWithContext e) {
-			System.out.println(e);
+			System.err.println(e);
 			return detected;
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("Cannot scan a directory: " + dexFileFile.getPath());
+			System.err.println("Cannot scan a directory: " + dexFileFile.getPath());
 			return detected;
 		} catch(Exception e) {
-			System.out.println("Error loading file: " + dexFileFile.getPath());
+			System.err.println("Error loading file: " + dexFileFile.getPath());
 			return detected;
 		} 
 
