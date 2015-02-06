@@ -41,6 +41,8 @@ import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.jf.dexlib2.DexFileFactory;
 import org.jf.util.ExceptionWithContext;
 
+import org.json.JSONObject;
+
 import com.google.common.collect.Ordering;
 
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
@@ -52,6 +54,7 @@ import com.tinkerpop.blueprints.Edge;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 
 // define: incest
 	// when a vertex has a sibling at the same depth 
@@ -142,6 +145,11 @@ public class CFGScanDroid {
 
 		// make sure a useful set of arguments are set
 		validateArguments(argParser);
+
+		if(parsedArguments.getExeFile().size() > 0) {
+			scanExeFile(parsedArguments.getExeFile());
+			System.exit(0);
+		}
 
 		// get files from directories, one level deep
 		List<File> fileList = getFileList();
@@ -253,8 +261,9 @@ public class CFGScanDroid {
 		// must have signature or dump sigs flag
 		if(parsedArguments.getRawSignatures().size() < 1 && 
 		   parsedArguments.getSignatureFiles().size() < 1 && 
-		   !parsedArguments.dumpSignatures()) {
-			System.err.println("PARSE ERROR: Must have one of (-s|-d|-r)!");
+		   !parsedArguments.dumpSignatures() &&
+		   parsedArguments.getExeFile().size() < 1) {
+			System.err.println("PARSE ERROR: Must have one of (-s|-d|-r|-x)!");
 			System.out.print(parsedArguments.getUsage());
 			System.exit(1);
 		}
@@ -266,7 +275,7 @@ public class CFGScanDroid {
 		}
 
 		// files are important
-		if(parsedArguments.getDexFiles().size() == 0) {
+		if(parsedArguments.getDexFiles().size() == 0 && parsedArguments.getExeFile().size() < 1) {
 			System.err.println("YOU SHOULD PROBABLY INCLUDE SOME FILES TO SCAN! (-f)");
 		}
 
@@ -320,7 +329,7 @@ public class CFGScanDroid {
 		// for each method, generate sig
 		for(final ClassDef classDef: classDefs) {
 			for(Method method: classDef.getMethods()) {
-				ControlFlowGraph cfg = new ControlFlowGraph(method);
+				ControlFlowGraph cfg = new AndroidCFG(method);
 
 				if(parsedArguments.normalize()) {
 					cfg.normalize();
@@ -331,6 +340,71 @@ public class CFGScanDroid {
 					System.out.println(sig.getStringSignature());
 			}
 		}
+	}
+
+	public static void scanExeFile(List<String> exeFileList) {
+		String exeFileName = exeFileList.get(0);
+		ArrayList<CFGSig> peSignatures = new ArrayList<CFGSig>();
+		ArrayList<PEFile> peFiles = new ArrayList<PEFile>();
+		
+		try{ 
+			BufferedReader br = new BufferedReader(new FileReader(exeFileName));
+			String jsonString = null;
+			// read signatures
+			while((jsonString = br.readLine()) != null) {
+				JSONObject jsonFile = new JSONObject(jsonString);
+				String fileName = jsonFile.getString("fileName");
+				String fileMD5 = jsonFile.getString("fileMD5");
+				String fileSHA256 = jsonFile.getString("fileSHA256");
+				JSONObject jsonFunctions = jsonFile.getJSONObject("functions");
+				ArrayList<PortableExecutableCFG> peCFGs = new ArrayList<PortableExecutableCFG>();
+
+				Iterator<String> functionKeys = jsonFunctions.keys();
+				while(functionKeys.hasNext()) {
+					String key = functionKeys.next();
+					JSONObject jsonFunction = jsonFunctions.getJSONObject(key);
+					String functionName = jsonFunction.getString("functionName");
+					String functionBytes = jsonFunction.getString("functionBytes");
+					String functionAddress = jsonFunction.getString("functionAddress");
+					String functionSig = jsonFunction.getString("functionSig");
+
+					CFGSig cfgSig = new CFGSig(functionSig);
+					PortableExecutableCFG peCFG = new PortableExecutableCFG(functionName, functionBytes, functionAddress, cfgSig.getAdjacencyMatrix());
+
+					peSignatures.add(cfgSig);
+					peCFGs.add(peCFG);
+				}
+
+				PEFile peFile = new PEFile(fileName, fileMD5, fileSHA256, peCFGs);
+				peFiles.add(peFile); 
+			}
+			
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if(peSignatures.size() == 0 || peFiles.size() == 0) {
+			System.err.println("Nothing loaded from file " + exeFileName);
+		}
+
+		// for file in files
+			// for function in functions
+				// for signature in signatures
+					// ScanningAlgorithm.scanMethod(signature.getAdjacencyMatrix(), cfg.getAdjacencyMatrix())
+
+		for(PEFile peFile : peFiles) {
+			for(PortableExecutableCFG peCFG : peFile.getFunctions()) {
+				for(CFGSig signature : peSignatures) {
+					if(ScanningAlgorithm.scanMethod(signature.getAdjacencyMatrix(), peCFG.getAdjacencyMatrix())) {
+						Match match = new Match(peFile, signature, peCFG);
+						matches.add(match);
+					}
+				}
+			}
+		}
+
+		return;
 	}
 
 	// scan dexfile
@@ -370,7 +444,7 @@ public class CFGScanDroid {
 			// for each method
 			for(Method method: classDef.getMethods()) {
 				// build CFG
-				ControlFlowGraph cfg = new ControlFlowGraph(method); //, tryBlocks);
+				ControlFlowGraph cfg = new AndroidCFG(method); //, tryBlocks);
 				
 				// This is incredibly slow as it is called on all methods -
 				// It would be good to put it after the conditionals for scanning

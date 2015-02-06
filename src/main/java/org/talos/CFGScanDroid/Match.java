@@ -41,6 +41,14 @@ public class Match {
 		this.signature = signature;
 	}
 
+	public Match(PEFile peFile, CFGSig signature, ControlFlowGraph cfg) {
+		this.fileName = peFile.getFileName();
+		this.fileMD5 = peFile.getFileMD5();
+		this.fileSHA256 = peFile.getFileSHA256();
+		this.cfg = cfg;
+		this.signature = signature;
+	}
+
 	public Match(Match previousMatch, CFGSig signature, ControlFlowGraph cfg) {
 		this.fileName = previousMatch.getFileName();
 		this.fileMD5 = previousMatch.getFileMD5();
@@ -74,9 +82,9 @@ public class Match {
 		output.put("fileName", fileName);
 		output.put("fileSHA256", fileSHA256);
 		output.put("fileMD5", fileMD5);
-		// output.put("signature", signature.getStringSignature());
+		output.put("signature", signature.getStringSignature());
 		output.put("signature", signature.getName());
-		// output.put("methodBytes", cfg.getMethodBytesAsHexString());
+		output.put("methodBytes", cfg.getMethodBytesAsHexString());
 		return output.toJSONString();
 	}
 }

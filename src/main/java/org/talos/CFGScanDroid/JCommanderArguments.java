@@ -70,9 +70,12 @@ public class JCommanderArguments {
 	@Parameter(names = {"-u", "-print-unmatched"}, description = "Print when no match is found", arity = 1)
 	private boolean printUnmatched = true;
 
+	@Parameter(names = {"-x", "-exe-file"}, description = "EXE JSON dump file to cluster on", variableArity = true)
+	private List<String> exeFile = new ArrayList<String>();
+
 	public String getUsage() {
 		String usage = 	"USAGE:\n"
-						+ "\tMust have one of (-d|-s|-l|-r) and you should probably specify some DEX files (-f) to use too\n"
+						+ "\tMust have one of (-d|-s|-l|-r|-x) and you should probably specify some DEX files (-f) to use too\n"
 						+ "\nESSENTIALS\n"
 						+ "\t-f, -dex-files\n"
 						+ "\t\tDEX file(s) to run\n"
@@ -84,6 +87,8 @@ public class JCommanderArguments {
 						+ "\t\tPass a signature in raw on the command line\n"
 						+ "\t-l, -load-sigs-from-dex\n"
 						+ "\t\tDEX file(s) whose methods to scan with\n"
+						+ "\t-x, -exe-file\n"
+						+ "\t\tEXE JSON dump file to cluster on\n"
 						+ "\nSCAN MODES\n"
 						+ "\t-e, -exact-match\n"
 						+ "\t\tOnly match complete signature CFG to function CFG\n"
@@ -116,6 +121,10 @@ public class JCommanderArguments {
 
 	public boolean outputGraph() {
 		return outputGraph;
+	}
+
+	public List<String> getExeFile() {
+		return exeFile;
 	}
 
 	public List<String> getSignatureFiles() {
