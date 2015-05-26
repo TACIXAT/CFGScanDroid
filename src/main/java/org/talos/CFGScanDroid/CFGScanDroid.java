@@ -42,6 +42,7 @@ import org.jf.dexlib2.DexFileFactory;
 import org.jf.util.ExceptionWithContext;
 
 import org.json.JSONObject;
+import org.json.JSONException;
 
 import com.google.common.collect.Ordering;
 
@@ -352,31 +353,38 @@ public class CFGScanDroid {
 			String jsonString = null;
 			// read signatures
 			while((jsonString = br.readLine()) != null) {
-				JSONObject jsonFile = new JSONObject(jsonString);
-				String fileName = jsonFile.getString("fileName");
-				String fileMD5 = jsonFile.getString("fileMD5");
-				String fileSHA256 = jsonFile.getString("fileSHA256");
-				JSONObject jsonFunctions = jsonFile.getJSONObject("functions");
-				ArrayList<PortableExecutableCFG> peCFGs = new ArrayList<PortableExecutableCFG>();
+				try {
+					JSONObject jsonFile = new JSONObject(jsonString);
+					String fileName = jsonFile.getString("fileName");
+					String fileMD5 = jsonFile.getString("fileMD5");
+					String fileSHA256 = jsonFile.getString("fileSHA256");
+					JSONObject jsonFunctions = jsonFile.getJSONObject("functions");
+					ArrayList<PortableExecutableCFG> peCFGs = new ArrayList<PortableExecutableCFG>();
 
-				Iterator<String> functionKeys = jsonFunctions.keys();
-				while(functionKeys.hasNext()) {
-					String key = functionKeys.next();
-					JSONObject jsonFunction = jsonFunctions.getJSONObject(key);
-					String functionName = jsonFunction.getString("functionName");
-					String functionBytes = jsonFunction.getString("functionBytes");
-					String functionAddress = jsonFunction.getString("functionAddress");
-					String functionSig = jsonFunction.getString("functionSig");
+					Iterator<String> functionKeys = jsonFunctions.keys();
+					while(functionKeys.hasNext()) {
+						String key = functionKeys.next();
+						JSONObject jsonFunction = jsonFunctions.getJSONObject(key);
+						String functionName = jsonFunction.getString("functionName");
+						String functionBytes = jsonFunction.getString("functionBytes");
+						String functionAddress = jsonFunction.getString("functionAddress");
+						String functionSig = jsonFunction.getString("functionSig");
 
-					CFGSig cfgSig = new CFGSig(functionSig);
-					PortableExecutableCFG peCFG = new PortableExecutableCFG(functionName, functionBytes, functionAddress, cfgSig.getAdjacencyMatrix());
+						CFGSig cfgSig = new CFGSig(functionSig);
+						if(cfgSig.getVertexCount() < 10)
+							continue;
+						
+						PortableExecutableCFG peCFG = new PortableExecutableCFG(functionName, functionBytes, functionAddress, cfgSig.getAdjacencyMatrix());
 
-					peSignatures.add(cfgSig);
-					peCFGs.add(peCFG);
+						peSignatures.add(cfgSig);
+						peCFGs.add(peCFG);
+					}
+
+					PEFile peFile = new PEFile(fileName, fileMD5, fileSHA256, peCFGs);
+					peFiles.add(peFile); 
+				} catch(JSONException jsonException) {
+					jsonException.printStackTrace();
 				}
-
-				PEFile peFile = new PEFile(fileName, fileMD5, fileSHA256, peCFGs);
-				peFiles.add(peFile); 
 			}
 			
 			br.close();
@@ -399,6 +407,9 @@ public class CFGScanDroid {
 					if(ScanningAlgorithm.scanMethod(signature.getAdjacencyMatrix(), peCFG.getAdjacencyMatrix())) {
 						Match match = new Match(peFile, signature, peCFG);
 						matches.add(match);
+						System.out.println(match.toJSONString());
+						if(parsedArguments.oneMatch())
+							break;
 					}
 				}
 			}
